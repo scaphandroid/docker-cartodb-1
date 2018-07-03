@@ -2,6 +2,8 @@ FROM ubuntu:16.04
 
 RUN apt-get update &&\
     apt-get install -y -q locales
+RUN locale-gen en_US.UTF-8 &&\
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 RUN apt-get install -q -y autoconf \
                           binutils-doc \
                           bison build-essential \
@@ -117,10 +119,10 @@ RUN apt-get -q -y install libxml2-dev &&\
 
 #postgis setup
 RUN service postgresql start && \
-  createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis &&\
-  psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;' &&\
-  ldconfig &&\
-  service postgresql stop
+    createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis &&\
+    psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;' &&\
+    ldconfig &&\
+    service postgresql stop
 
 #SQL API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git &&\
@@ -178,8 +180,8 @@ RUN service postgresql start && service redis-server start &&\
 
 ADD ./create_user /cartodb/script/create_user
 RUN service postgresql start && service redis-server start && \
-	bash -l -c "cd /cartodb && bash script/create_user" && \
-	service postgresql stop && service redis-server stop
+    bash -l -c "cd /cartodb && bash script/create_user" && \
+  	service postgresql stop && service redis-server stop
 
 EXPOSE 3000 8080 8181
 
