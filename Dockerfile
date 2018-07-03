@@ -1,15 +1,19 @@
-FROM ubuntu:12.04
+FROM ubuntu:16.04
 
-RUN locale-gen en_US.UTF-8 &&\
-	update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
 RUN apt-get update &&\
-apt-get install -q -y autoconf binutils-doc bison build-essential flex
+    apt-get install -y -q locales
+RUN apt-get install -q -y autoconf \
+                          binutils-doc \
+                          bison build-essential \
+                          flex \
+                          software-properties-common
 
 #apt-utils
 RUN apt-get install -q -y apt-utils
 
 #ruby-rvm
-RUN apt-get install -q -y ruby-rvm
+RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys E54DBDF7355FE6DBEC654BAC6F44D37DD878D6C2  409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+RUN apt-add-repository -y ppa:rael-gc/rvm && apt-get update && apt-get install -y rvm
 
 #varnish
 RUN apt-get install -q -y varnish
@@ -20,10 +24,9 @@ RUN apt-get install -q -y git
 #apt tools
 RUN apt-get install -q -y python-software-properties
 
-RUN add-apt-repository ppa:cartodb/gcc &&\
- apt-get update 
-
-RUN apt-get install -q -y gcc-4.9 g++-4.9
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test && \
+    apt-get update && \
+    apt-get -y -q install g++-4.9 gcc-4.9
 
 ENV CC=/usr/bin/gcc-4.9 
 ENV CXX=/usr/bin/g++-4.9
@@ -75,17 +78,17 @@ RUN apt-get install -q -y redis-server
 
 #nodejs
 RUN add-apt-repository ppa:cartodb/nodejs &&\
-apt-get update &&\
-apt-get install -q -y nodejs
+    apt-get update &&\
+    apt-get install -q -y nodejs
 
 RUN apt-get install -q -y libpixman-1-0 libpixman-1-dev
 RUN apt-get install -q -y libcairo2-dev libjpeg-dev libgif-dev libpango1.0-dev
 
 RUN apt-get install -q -y python-all-dev &&\
-apt-get install -q -y imagemagick unp zip
+    apt-get install -q -y imagemagick unp zip
 
 RUN wget  -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
-python /tmp/get-pip.py
+    python /tmp/get-pip.py
 
 RUN pip install --upgrade pip==9.0.0
 
@@ -97,22 +100,20 @@ ENV cartodb_sql_api_version=1.48.1
 
 #carto postgres extension
 RUN git clone https://github.com/CartoDB/cartodb-postgresql.git &&\
-cd cartodb-postgresql &&\
-git checkout $cartodb_postgresql_version &&\
-PGUSER=postgres make all &&\
-PGUSER=postgres make install
+    cd cartodb-postgresql &&\
+    git checkout $cartodb_postgresql_version &&\
+    PGUSER=postgres make all &&\
+    PGUSER=postgres make install
 
 #GIS dependencies
-RUN apt-get upgrade -q -y && add-apt-repository ppa:cartodb/gis && apt-get update &&\
- apt-get install -q -y proj proj-bin proj-data libproj-dev &&\ 
- apt-get install -q -y libjson0 libjson0-dev python-simplejson &&\ 
- apt-get install -q -y libgeos-c1v5 libgeos-dev &&\ 
- apt-get install -q -y gdal-bin libgdal1-dev libgdal-dev &&\
- apt-get install -q -y gdal2.1-static-bin
+RUN apt-get install -q -y proj-bin proj-data libproj-dev &&\
+    apt-get install -q -y libjson0 libjson0-dev python-simplejson &&\
+    apt-get install -q -y libgeos-c1v5 libgeos-dev &&\
+    apt-get install -q -y gdal-bin libgdal1-dev libgdal-dev
 
 #postgis
 RUN apt-get -q -y install libxml2-dev &&\
-apt-get install -q -y liblwgeom-2.2.2 postgis postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
+    apt-get install -q -y liblwgeom-2.2.5 postgis postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
 
 #postgis setup
 RUN service postgresql start && \
@@ -123,24 +124,24 @@ RUN service postgresql start && \
 
 #SQL API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git &&\
-cd CartoDB-SQL-API &&\
-git checkout $cartodb_sql_api_version &&\
-npm install 
+    cd CartoDB-SQL-API &&\
+    git checkout $cartodb_sql_api_version &&\
+    npm install 
 
 #MAPS API:
 RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git &&\
-cd Windshaft-cartodb &&\
-git checkout $cartodb_windshaft_version &&\
-npm install
+    cd Windshaft-cartodb &&\
+    git checkout $cartodb_windshaft_version &&\
+    npm install
 
 #Carto Editor
 RUN git clone --recursive https://github.com/CartoDB/cartodb.git &&\
-cd cartodb &&\
-git checkout $cartodb_version
+    cd cartodb &&\
+    git checkout $cartodb_version
 
 RUN cd cartodb &&\
-bundle install &&\
-npm install 
+    bundle install &&\
+    npm install 
 
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
